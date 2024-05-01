@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Container, Typography, Button, Box, Dialog } from '@mui/material'
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/auth'
-import * as firebaseui from 'firebaseui'
+import firebaseui from 'firebaseui'
 import 'firebaseui/dist/firebaseui.css'
 import { auth } from '../firebase'
-import { addUserToDatabase } from '../firebase/firestore'
 
 // Configure FirebaseUI.
 const uiConfig = {
