@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Container, Typography, Button, Box, Dialog } from '@mui/material'
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/auth'
-import firebaseui from 'firebaseui'
+import * as firebaseui from 'firebaseui'
 import 'firebaseui/dist/firebaseui.css'
 import { auth } from '../firebase'
 
