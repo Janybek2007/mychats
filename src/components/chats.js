@@ -8,7 +8,7 @@ function Chats() {
 	const { chats, dispatch } = useChats()
 	const _groups = useChatGroup()
 
-	const handleSelect = user => {
+const handleSelect = user => {
 		dispatch({ type: 'CHANGE_USER', payload: user })
 		_groups.dispatch({ type: 'CLEAR_GROUP_ID' })
 	}

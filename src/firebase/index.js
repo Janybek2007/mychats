@@ -16,14 +16,24 @@ import { getStorage } from 'firebase/storage'
 // }
 
 const firebaseConfig = {
-	apiKey: 'AIzaSyAC1SSvE_1x9zgemxvKMBvXbt-_jGIf8jo',
-	authDomain: 'mychats-1c8a0.firebaseapp.com',
-	databaseURL: 'https://mychats-1c8a0-default-rtdb.firebaseio.com',
-	projectId: 'mychats-1c8a0',
-	storageBucket: 'mychats-1c8a0.appspot.com',
-	messagingSenderId: '731663533725',
-	appId: '1:731663533725:web:acab1fe17c452d9b16f674'
+	apiKey: 'AIzaSyCaBIkXJ3mvkhPMXTznZp28toRoqwfeh4s',
+	authDomain: 'mychats-2f47e.firebaseapp.com',
+	projectId: 'mychats-2f47e',
+	storageBucket: 'mychats-2f47e.appspot.com',
+	messagingSenderId: '204502097043',
+	appId: '1:204502097043:web:758bd2e48645ed27470166',
+	measurementId: 'G-HF1LKF6JNX'
 }
+
+// const firebaseConfig = {
+// 	apiKey: 'AIzaSyAC1SSvE_1x9zgemxvKMBvXbt-_jGIf8jo',
+// 	authDomain: 'mychats-1c8a0.firebaseapp.com',
+// 	databaseURL: 'https://mychats-1c8a0-default-rtdb.firebaseio.com',
+// 	projectId: 'mychats-1c8a0',
+// 	storageBucket: 'mychats-1c8a0.appspot.com',
+// 	messagingSenderId: '731663533725',
+// 	appId: '1:731663533725:web:acab1fe17c452d9b16f674'
+// }
 
 const app = initializeApp(firebaseConfig)
 
