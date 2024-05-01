@@ -150,7 +150,7 @@ const ChatGroupProvider = ({ children }) => {
 		const interval = setInterval(() => {
 			authUser?.uid && getGroups()
 			console.log('iii')
-		}, 1200)
+		}, 300)
 
 		return () => clearInterval(interval)
 	}, [authUser?.uid, getGroups])
