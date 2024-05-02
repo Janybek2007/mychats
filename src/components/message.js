@@ -1,9 +1,9 @@
-import { Avatar, Modal, Typography } from '@mui/material'
-import { Box } from '@mui/system'
+import { Avatar, Typography, Box } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { formatTimestamp } from '../helper/formatTimestamp1'
 import { useAuth } from '../hooks/useAuth'
 import { useMessages } from '../hooks/useMessages'
+import MessageMenu from './messageMenu'
 
 function Message({ message }) {
 	const [senderUser, setSenderUser] = useState(null)
@@ -12,8 +12,7 @@ function Message({ message }) {
 
 	const ref = useRef()
 
-	const [isModalOpen, setIsModalOpen] = useState(false)
-	const [selectedMessage, setSelectedMessage] = useState(null)
+	const [menuAnchor, setMenuAnchor] = useState(null)
 
 	useEffect(() => {
 		ref.current?.scrollIntoView({ behavior: 'smooth' })
@@ -21,20 +20,21 @@ function Message({ message }) {
 
 	const isThisUser = message.senderId === authUser.uid
 
-	const handleOpenModal = message => {
-		setSelectedMessage(message)
-		setIsModalOpen(true)
+	const handleDoubleClick = event => {
+		setMenuAnchor(event.currentTarget)
 	}
 
-	const handleCloseModal = () => setIsModalOpen(false)
+	const handleCloseMenu = () => {
+		setMenuAnchor(null)
+	}
 
 	useEffect(() => {
-		async function get() {
+		async function getSender() {
 			const sender = await findUserToSenderId(message.senderId)
 			setSenderUser(sender)
 		}
-		get()
-		return () => get()
+		getSender()
+		return () => getSender()
 	}, [findUserToSenderId, message.senderId])
 
 	return (
@@ -57,7 +57,7 @@ function Message({ message }) {
 			>
 				<Box
 					display={'flex'}
-					alignItems={'flex-start'}
+					alignItems={!isThisUser ? 'flex-start' : 'flex-end'}
 					gap={1}
 					flexDirection={message.img ? 'column' : 'row'}
 				>
@@ -67,6 +67,7 @@ function Message({ message }) {
 							display={'flex'}
 							alignItems={'center'}
 							gap={1}
+							onDoubleClick={handleDoubleClick}
 						>
 							{!isThisUser && <Avatar src={senderUser?.photoURL} alt='as' />}
 							<Box
@@ -85,23 +86,18 @@ function Message({ message }) {
 							width={'300px'}
 							src={message.img}
 							alt=''
-							onClick={() => handleOpenModal(message)}
-							style={{ cursor: 'pointer', borderRadius: 5 }}
+							onDoubleClick={handleDoubleClick}
+							style={{ borderRadius: 5 }}
 						/>
 					)}
 				</Box>
 			</Box>
-			<Modal
-				open={isModalOpen}
-				onClose={handleCloseModal}
-				sx={{
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'center'
-				}}
-			>
-				<img width={'50%'} src={isModalOpen && selectedMessage.img} alt='' />
-			</Modal>
+			<MessageMenu
+				isThisUser={isThisUser}
+				anchorEl={menuAnchor}
+				handleClose={handleCloseMenu}
+				message={message}
+			/>
 		</>
 	)
 }

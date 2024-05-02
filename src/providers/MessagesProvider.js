@@ -8,9 +8,16 @@ import {
 	Timestamp,
 	updateDoc,
 	collection,
-	getDocs
+	getDocs,
+	getDoc,
+	setDoc
 } from '@firebase/firestore'
-import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
+import {
+	deleteObject,
+	getDownloadURL,
+	ref,
+	uploadBytesResumable
+} from 'firebase/storage'
 
 import { db, storage } from '../firebase'
 import { useAuth } from '../hooks/useAuth'
@@ -128,11 +135,95 @@ const MessagesProvider = ({ children }) => {
 		return findUser
 	}
 
+	async function deleteMessage(messageId, is) {
+		if (chatId === 'null') return
+
+		try {
+			const chatsDocRef = doc(db, 'chats', chatId)
+			const chatDoc = await getDoc(chatsDocRef)
+
+			if (chatDoc.exists()) {
+				const currentMessages = chatDoc.data().messages
+				const updatedMessages = currentMessages
+					.map(message => {
+						if (message.id === messageId) {
+							if (message.img && is !== 'img') {
+								return { ...message, text: '' }
+							} else {
+								return null
+							}
+						}
+						return message
+					})
+					.filter(Boolean)
+
+				await updateDoc(chatsDocRef, { messages: updatedMessages })
+
+				await notify()
+
+				if (is === 'img') {
+					const deletedMessage = currentMessages.find(
+						message => message.id === messageId
+					)
+					if (deletedMessage && deletedMessage.img) {
+						const imgRef = ref(storage, deletedMessage.img)
+						await deleteObject(imgRef)
+					}
+				}
+			} else {
+				console.error('Chat document does not exist')
+			}
+		} catch (error) {
+			console.error('Error deleting message:', error)
+		}
+	}
+
+	async function updateTextMessage(messageId, editText) {
+		if (chatId === 'null') return
+
+		const chatsDoc = doc(db, 'chats', chatId)
+		const chatDoc = await getDoc(chatsDoc)
+
+		if (chatDoc.exists()) {
+			const messages = chatDoc.data().messages
+			const updatedMessages = messages.map(message => {
+				if (message.id === messageId) {
+					return { ...message, text: editText }
+				}
+				return message
+			})
+
+			await setDoc(chatsDoc, { messages: updatedMessages }, { merge: true })
+
+			await notify()
+		}
+	}
+
+	async function notify() {
+		await updateDoc(doc(db, 'userChats', authUser.uid), {
+			[chatId + '.lastMessage']: {
+				text: '',
+				img: null
+			},
+			[chatId + '.date']: serverTimestamp()
+		})
+
+		await updateDoc(doc(db, 'userChats', user.uid), {
+			[chatId + '.lastMessage']: {
+				text: '',
+				img: null
+			},
+			[chatId + '.date']: serverTimestamp()
+		})
+	}
+
 	const values = {
 		messages,
 		messagesEndRef,
 		handleSend,
-		findUserToSenderId
+		findUserToSenderId,
+		deleteMessage,
+		updateTextMessage
 	}
 
 	return (

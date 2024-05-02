@@ -7,7 +7,7 @@ export const ChatsContext = createContext()
 
 const INITIAL_STATE = {
 	chatId: JSON.parse(localStorage.getItem('chatId')) ?? 'null',
-	user: {}
+	user: JSON.parse(localStorage.getItem('user')) ?? {}
 }
 
 const ChatsProvider = ({ children }) => {
@@ -24,6 +24,7 @@ const ChatsProvider = ({ children }) => {
 							? authUser.uid + action.payload.uid
 							: action.payload.uid + authUser.uid
 					localStorage.setItem('chatId', JSON.stringify(chatId))
+					localStorage.setItem('user', JSON.stringify(action.payload))
 					localStorage.removeItem('groupId')
 					return {
 						user: action.payload,
@@ -35,8 +36,10 @@ const ChatsProvider = ({ children }) => {
 				}
 			case 'CLEAR_CHAT_ID':
 				localStorage.removeItem('chatId')
+				localStorage.removeItem('user')
 				return {
-					chatId: 'null'
+					chatId: 'null',
+					user: {}
 				}
 
 			default:
