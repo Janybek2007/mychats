@@ -1,14 +1,21 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useChats } from '../hooks/useChats'
 import { List } from '@mui/material'
 import ChatList from './chatList'
 import { useChatGroup } from '../hooks/useChatGroup'
+import autoAnimate from '@formkit/auto-animate'
 
 function Chats() {
 	const { chats, dispatch } = useChats()
 	const _groups = useChatGroup()
 
-const handleSelect = user => {
+	const parent = useRef(null)
+
+	useEffect(() => {
+		parent.current && autoAnimate(parent.current)
+	}, [parent])
+
+	const handleSelect = user => {
 		dispatch({ type: 'CHANGE_USER', payload: user })
 		_groups.dispatch({ type: 'CLEAR_GROUP_ID' })
 	}
@@ -23,7 +30,10 @@ const handleSelect = user => {
 		.sort((a, b) => b[1].date - a[1].date)
 
 	return (
-		<List sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+		<List
+			ref={parent}
+			sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
+		>
 			{allItems.length === 0 ? 'Пусто' : ''}
 			{allItems.map(([key, item]) => {
 				return (

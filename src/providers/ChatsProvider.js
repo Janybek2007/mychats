@@ -7,7 +7,7 @@ export const ChatsContext = createContext()
 
 const INITIAL_STATE = {
 	chatId: JSON.parse(localStorage.getItem('chatId')) ?? 'null',
-	user: {}
+	user: JSON.parse(localStorage.getItem('user')) ?? {}
 }
 
 const ChatsProvider = ({ children }) => {
@@ -24,6 +24,7 @@ const ChatsProvider = ({ children }) => {
 							? authUser.uid + action.payload.uid
 							: action.payload.uid + authUser.uid
 					localStorage.setItem('chatId', JSON.stringify(chatId))
+					localStorage.setItem('user', JSON.stringify(action.payload))
 					localStorage.removeItem('groupId')
 					return {
 						user: action.payload,
@@ -35,8 +36,10 @@ const ChatsProvider = ({ children }) => {
 				}
 			case 'CLEAR_CHAT_ID':
 				localStorage.removeItem('chatId')
+				localStorage.removeItem('user')
 				return {
-					chatId: 'null'
+					chatId: 'null',
+					user: {}
 				}
 
 			default:
@@ -44,17 +47,17 @@ const ChatsProvider = ({ children }) => {
 		}
 	}
 
-	function findChatId() {
+	function findChatId(chatIds) {
 		let chatId = {
 			first: '',
 			second: ''
 		}
 		let start = 0
 		let end = 28
-		const condition = authUser.uid === state.chatId.slice(start, end)
+		const condition = authUser.uid === chatIds.slice(start, end)
 		if (!condition) {
 			chatId = {
-				first: state.chatId.slice(start, end),
+				first: chatIds.slice(start, end),
 				end: ''
 			}
 			start = end
@@ -62,16 +65,16 @@ const ChatsProvider = ({ children }) => {
 		}
 		chatId = {
 			...chatId,
-			end: state.chatId.slice(start, end)
+			end: chatIds.slice(start, end)
 		}
 		return chatId
 	}
-	const deleteChat = async () => {
+	const deleteChat = async chatId => {
 		try {
-			if (state.chatId !== 'null') {
-				await deleteDoc(doc(db, 'chats', state.chatId))
-				await deleteDoc(doc(db, 'userChats', findChatId().first))
-				await deleteDoc(doc(db, 'userChats', findChatId().second))
+			if (chatId) {
+				await deleteDoc(doc(db, 'chats', chatId))
+				await deleteDoc(doc(db, 'userChats', findChatId(chatId).first))
+				await deleteDoc(doc(db, 'userChats', findChatId(chatId).second))
 				dispatch({ type: 'CLEAR_CHAT_ID' })
 			}
 		} catch (error) {
