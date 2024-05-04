@@ -14,26 +14,12 @@ function UserFound({ found, clear }) {
 
 	const founds = found.filter(found => !found.groupName)
 
-	async function handleGroupSelect(find) {
-		try {
-			const res = await getDoc(doc(db, 'chats', find.groupId))
-
-			if (!res.exists()) {
-				await setDoc(doc(db, 'chats', find.groupId), { messages: [] })
-			}
-		} catch (error) {}
-	}
-
 	const handleSelect = async find => {
 		const combinedId =
 			authUser?.uid > find.uid
 				? authUser?.uid + find.uid
 				: find.uid + authUser?.uid
 		try {
-			if (!find.uid) {
-				await handleGroupSelect({ group: find })
-				return
-			}
 			const res = await getDoc(doc(db, 'chats', combinedId))
 
 			if (!res.exists()) {
