@@ -34,19 +34,29 @@ function UserSearch({ setFound, setErr, setName, name, clear }) {
 
 	const handleSearch = async () => {
 		const usersCollection = collection(db, 'users')
+		const gropusCollection = collection(db, 'chatGroups')
 		let founds = []
 		try {
 			const querySnapshot = await getDocs(usersCollection)
-
+			const groupQuerySnapshot = await getDocs(gropusCollection)
+			groupQuerySnapshot.docs.forEach(doc => {
+				const findGroup = doc
+					.data()
+					.groupName.toLowerCase()
+					.includes(name.toLowerCase())
+				if (findGroup) {
+					founds = [doc.data(), ...founds]
+				}
+			})
 			querySnapshot.docs.forEach(doc => {
 				const findUser =
 					doc.data().displayName.toLowerCase().includes(name.toLowerCase()) &&
 					authUser?.uid !== doc.data().uid
 				if (findUser) {
-					founds.push(doc.data())
+					founds = [doc.data(), ...founds]
 				}
 			})
-			if (querySnapshot.empty) {
+			if (querySnapshot.empty || groupQuerySnapshot.empty) {
 				console.log('No documents found matching the query.')
 			}
 			setFound(founds)

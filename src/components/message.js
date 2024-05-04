@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { formatTimestamp } from '../helper/formatTimestamp1'
 import { useAuth } from '../hooks/useAuth'
 import { useMessages } from '../hooks/useMessages'
+import MessageMenu from './messageMenu'
 
 function Message({ message }) {
 	const [senderUser, setSenderUser] = useState(null)
@@ -11,11 +12,21 @@ function Message({ message }) {
 
 	const ref = useRef()
 
+	const [menuAnchor, setMenuAnchor] = useState(null)
+
 	useEffect(() => {
 		ref.current?.scrollIntoView({ behavior: 'smooth' })
 	}, [message])
 
 	const isThisUser = message.senderId === authUser.uid
+
+	const handleDoubleClick = event => {
+		setMenuAnchor(event.currentTarget)
+	}
+
+	const handleCloseMenu = () => {
+		setMenuAnchor(null)
+	}
 
 	useEffect(() => {
 		async function getSender() {
@@ -56,6 +67,7 @@ function Message({ message }) {
 							display={'flex'}
 							alignItems={'center'}
 							gap={1}
+							onDoubleClick={handleDoubleClick}
 						>
 							{!isThisUser && <Avatar src={senderUser?.photoURL} alt='as' />}
 							<Box
@@ -74,11 +86,18 @@ function Message({ message }) {
 							width={'300px'}
 							src={message.img}
 							alt=''
+							onDoubleClick={handleDoubleClick}
 							style={{ borderRadius: 5 }}
 						/>
 					)}
 				</Box>
 			</Box>
+			<MessageMenu
+				isThisUser={isThisUser}
+				anchorEl={menuAnchor}
+				handleClose={handleCloseMenu}
+				message={message}
+			/>
 		</>
 	)
 }

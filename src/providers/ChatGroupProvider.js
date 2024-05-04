@@ -14,7 +14,8 @@ import {
 	doc,
 	updateDoc,
 	setDoc,
-	getDocs
+	getDocs,
+	getDoc
 } from '@firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from './../hooks/useAuth'
@@ -66,14 +67,31 @@ const ChatGroupProvider = ({ children }) => {
 
 	const addUserToChatGroup = async (groupId, userIds) => {
 		try {
-			await updateDoc(doc(db, 'chatGroups', groupId), {
-				members: arrayUnion(...userIds)
-			})
-			getGroups()
+			const groupDocRef = doc(db, 'chatGroups', groupId)
+			const groupDocSnapshot = await getDoc(groupDocRef)
+
+			if (groupDocSnapshot.exists()) {
+				const existingMembers = groupDocSnapshot.data().members || []
+				const newMembers = userIds.filter(
+					userId => !existingMembers.includes(userId)
+				)
+
+				if (newMembers.length > 0) {
+					await updateDoc(groupDocRef, {
+						members: arrayUnion(...newMembers)
+					})
+					getGroups()
+				} else {
+					console.log('All users are already members of the chat group.')
+				}
+			} else {
+				console.error('Chat group does not exist.')
+			}
 		} catch (error) {
 			console.error('Error adding user to chat group:', error)
 		}
 	}
+
 	const changeGroupName = async (groupId, groupName) => {
 		try {
 			await updateDoc(doc(db, 'chatGroups', groupId), {
@@ -150,7 +168,7 @@ const ChatGroupProvider = ({ children }) => {
 		const interval = setInterval(() => {
 			authUser?.uid && getGroups()
 			console.log('iii')
-		}, 1000)
+		}, 1200)
 
 		return () => clearInterval(interval)
 	}, [authUser?.uid, getGroups])

@@ -136,10 +136,10 @@ const MessagesProvider = ({ children }) => {
 	}
 
 	async function deleteMessage(messageId, is) {
-		if (chatId === 'null') return
-
+		if (chatId === 'null' && groupId === 'null') return
+		const roomId = chatId === 'null' ? groupId : chatId
 		try {
-			const chatsDocRef = doc(db, 'chats', chatId)
+			const chatsDocRef = doc(db, 'chats', roomId)
 			const chatDoc = await getDoc(chatsDocRef)
 
 			if (chatDoc.exists()) {
@@ -159,7 +159,7 @@ const MessagesProvider = ({ children }) => {
 
 				await updateDoc(chatsDocRef, { messages: updatedMessages })
 
-				await notify()
+				await notify('deleted')
 
 				if (is === 'img') {
 					const deletedMessage = currentMessages.find(
@@ -179,9 +179,10 @@ const MessagesProvider = ({ children }) => {
 	}
 
 	async function updateTextMessage(messageId, editText) {
-		if (chatId === 'null') return
+		if (chatId === 'null' && groupId === 'null') return
+		const roomId = chatId === 'null' ? groupId : chatId
 
-		const chatsDoc = doc(db, 'chats', chatId)
+		const chatsDoc = doc(db, 'chats', roomId)
 		const chatDoc = await getDoc(chatsDoc)
 
 		if (chatDoc.exists()) {
@@ -195,26 +196,36 @@ const MessagesProvider = ({ children }) => {
 
 			await setDoc(chatsDoc, { messages: updatedMessages }, { merge: true })
 
-			await notify()
+			await notify('updated')
 		}
 	}
 
-	async function notify() {
-		await updateDoc(doc(db, 'userChats', authUser.uid), {
-			[chatId + '.lastMessage']: {
-				text: '',
-				img: null
-			},
-			[chatId + '.date']: serverTimestamp()
-		})
+	async function notify(text) {
+		if (chatId !== 'null') {
+			await updateDoc(doc(db, 'userChats', authUser.uid), {
+				[chatId + '.lastMessage']: {
+					text,
+					img: null
+				},
+				[chatId + '.date']: serverTimestamp()
+			})
 
-		await updateDoc(doc(db, 'userChats', user.uid), {
-			[chatId + '.lastMessage']: {
-				text: '',
-				img: null
-			},
-			[chatId + '.date']: serverTimestamp()
-		})
+			await updateDoc(doc(db, 'userChats', user.uid), {
+				[chatId + '.lastMessage']: {
+					text,
+					img: null
+				},
+				[chatId + '.date']: serverTimestamp()
+			})
+		} else if (groupId !== 'null') {
+			await updateDoc(doc(db, 'chatGroups', groupId), {
+				lastMessage: {
+					text,	
+					img: null
+				},
+				date: serverTimestamp()
+			})
+		}
 	}
 
 	const values = {
